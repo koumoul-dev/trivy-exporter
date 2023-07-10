@@ -1,0 +1,23 @@
+{
+  "scripts": {
+    "dev": "nodemon index.js",
+    "lint": "eslint . --fix",
+    "test": "mocha --timeout 100000"
+  },
+  "dependencies": {
+    "dockerode": "^3.3.5",
+    "mocha": "^10.2.0",
+    "node-cron": "^3.0.2",
+    "prom-client": "^14.2.0",
+    "sinon": "^15.2.0"
+  },
+  "devDependencies": {
+    "eslint": "^8.43.0",
+    "eslint-config-standard": "^17.1.0",
+    "eslint-plugin-import": "^2.27.5",
+    "eslint-plugin-n": "^16.0.1",
+    "eslint-plugin-promise": "^6.1.1",
+    "eslint-plugin-vue": "^9.15.1",
+    "nodemon": "^2.0.22"
+  }
+}
