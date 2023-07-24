@@ -191,7 +191,7 @@
             "https://www.openssl.org/news/secadv/20230207.txt"
           ],
           "PublishedDate": "2023-02-08T20:15:00Z",
-          "LastModifiedDate": "2023-02-24T15:15:00Z"
+          "LastModifiedDate": "2023-07-19T00:57:00Z"
         },
         {
           "VulnerabilityID": "CVE-2023-0215",
@@ -283,7 +283,7 @@
             "https://www.openssl.org/news/secadv/20230207.txt"
           ],
           "PublishedDate": "2023-02-08T20:15:00Z",
-          "LastModifiedDate": "2023-04-27T15:15:00Z"
+          "LastModifiedDate": "2023-07-19T00:55:00Z"
         },
         {
           "VulnerabilityID": "CVE-2023-0216",
@@ -372,7 +372,7 @@
             "https://www.openssl.org/news/secadv/20230207.txt"
           ],
           "PublishedDate": "2023-02-08T20:15:00Z",
-          "LastModifiedDate": "2023-02-24T15:15:00Z"
+          "LastModifiedDate": "2023-07-19T00:54:00Z"
         },
         {
           "VulnerabilityID": "CVE-2023-0217",
@@ -555,7 +555,7 @@
             "https://www.openssl.org/news/secadv/20230207.txt"
           ],
           "PublishedDate": "2023-02-08T20:15:00Z",
-          "LastModifiedDate": "2023-03-27T19:15:00Z"
+          "LastModifiedDate": "2023-07-19T00:54:00Z"
         },
         {
           "VulnerabilityID": "CVE-2023-0401",
@@ -644,7 +644,7 @@
             "https://www.openssl.org/news/secadv/20230207.txt"
           ],
           "PublishedDate": "2023-02-08T20:15:00Z",
-          "LastModifiedDate": "2023-02-24T15:15:00Z"
+          "LastModifiedDate": "2023-07-19T00:54:00Z"
         },
         {
           "VulnerabilityID": "CVE-2023-0464",
@@ -935,7 +935,7 @@
             "https://www.openssl.org/news/secadv/20230207.txt"
           ],
           "PublishedDate": "2023-02-08T20:15:00Z",
-          "LastModifiedDate": "2023-02-24T17:13:00Z"
+          "LastModifiedDate": "2023-07-19T00:57:00Z"
         },
         {
           "VulnerabilityID": "CVE-2023-0465",
@@ -1109,6 +1109,66 @@
           ],
           "PublishedDate": "2023-04-20T17:15:00Z",
           "LastModifiedDate": "2023-05-02T16:42:00Z"
+        },
+        {
+          "VulnerabilityID": "CVE-2023-2975",
+          "PkgID": "libcrypto3@3.0.7-r0",
+          "PkgName": "libcrypto3",
+          "InstalledVersion": "3.0.7-r0",
+          "FixedVersion": "3.0.9-r2",
+          "Layer": {
+            "DiffID": "sha256:ded7a220bb058e28ee3254fbba04ca90b679070424424761a53a043b93b612bf"
+          },
+          "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-2975",
+          "DataSource": {
+            "ID": "alpine",
+            "Name": "Alpine Secdb",
+            "URL": "https://secdb.alpinelinux.org/"
+          },
+          "Title": "AES-SIV cipher implementation contains a bug that causes it to ignore empty associated data entries",
+          "Description": "Issue summary: The AES-SIV cipher implementation contains a bug that causes\nit to ignore empty associated data entries which are unauthenticated as\na consequence.\n\nImpact summary: Applications that use the AES-SIV algorithm and want to\nauthenticate empty data entries as associated data can be mislead by removing\nadding or reordering such empty entries as these are ignored by the OpenSSL\nimplementation. We are currently unaware of any such applications.\n\nThe AES-SIV algorithm allows for authentication of multiple associated\ndata entries along with the encryption. To authenticate empty data the\napplication has to call EVP_EncryptUpdate() (or EVP_CipherUpdate()) with\nNULL pointer as the output buffer and 0 as the input buffer length.\nThe AES-SIV implementation in OpenSSL just returns success for such a call\ninstead of performing the associated data authentication operation.\nThe empty data thus will not be authenticated.\n\nAs this issue does not affect non-empty associated data authentication and\nwe expect it to be rare for an application to use empty associated data\nentries this is qualified as Low severity issue.",
+          "Severity": "MEDIUM",
+          "CVSS": {
+            "redhat": {
+              "V3Vector": "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:N/I:H/A:N",
+              "V3Score": 5.9
+            }
+          },
+          "References": [
+            "http://www.openwall.com/lists/oss-security/2023/07/15/1",
+            "https://access.redhat.com/security/cve/CVE-2023-2975",
+            "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2023-2975",
+            "https://git.openssl.org/gitweb/?p=openssl.git;a=commitdiff;h=00e2f5eea29994d19293ec4e8c8775ba73678598",
+            "https://git.openssl.org/gitweb/?p=openssl.git;a=commitdiff;h=6a83f0c958811f07e0d11dfc6b5a6a98edfd5bdc",
+            "https://nvd.nist.gov/vuln/detail/CVE-2023-2975",
+            "https://www.cve.org/CVERecord?id=CVE-2023-2975",
+            "https://www.openssl.org/news/secadv/20230714.txt"
+          ],
+          "PublishedDate": "2023-07-14T12:15:00Z",
+          "LastModifiedDate": "2023-07-15T13:15:00Z"
+        },
+        {
+          "VulnerabilityID": "CVE-2023-3446",
+          "PkgID": "libcrypto3@3.0.7-r0",
+          "PkgName": "libcrypto3",
+          "InstalledVersion": "3.0.7-r0",
+          "FixedVersion": "3.0.9-r3",
+          "Layer": {
+            "DiffID": "sha256:ded7a220bb058e28ee3254fbba04ca90b679070424424761a53a043b93b612bf"
+          },
+          "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-3446",
+          "DataSource": {
+            "ID": "alpine",
+            "Name": "Alpine Secdb",
+            "URL": "https://secdb.alpinelinux.org/"
+          },
+          "Title": "Issue summary: Checking excessively long DH keys or parameters may be  ...",
+          "Description": "Excessive time spent checking DH keys and parameters",
+          "Severity": "LOW",
+          "References": [
+            "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2023-3446",
+            "https://www.openssl.org/news/secadv/20230719.txt"
+          ]
         },
         {
           "VulnerabilityID": "CVE-2022-3996",
@@ -1244,7 +1304,7 @@
             "https://www.openssl.org/news/secadv/20230207.txt"
           ],
           "PublishedDate": "2023-02-08T20:15:00Z",
-          "LastModifiedDate": "2023-02-24T15:15:00Z"
+          "LastModifiedDate": "2023-07-19T00:57:00Z"
         },
         {
           "VulnerabilityID": "CVE-2023-0215",
@@ -1336,7 +1396,7 @@
             "https://www.openssl.org/news/secadv/20230207.txt"
           ],
           "PublishedDate": "2023-02-08T20:15:00Z",
-          "LastModifiedDate": "2023-04-27T15:15:00Z"
+          "LastModifiedDate": "2023-07-19T00:55:00Z"
         },
         {
           "VulnerabilityID": "CVE-2023-0216",
@@ -1425,7 +1485,7 @@
             "https://www.openssl.org/news/secadv/20230207.txt"
           ],
           "PublishedDate": "2023-02-08T20:15:00Z",
-          "LastModifiedDate": "2023-02-24T15:15:00Z"
+          "LastModifiedDate": "2023-07-19T00:54:00Z"
         },
         {
           "VulnerabilityID": "CVE-2023-0217",
@@ -1608,7 +1668,7 @@
             "https://www.openssl.org/news/secadv/20230207.txt"
           ],
           "PublishedDate": "2023-02-08T20:15:00Z",
-          "LastModifiedDate": "2023-03-27T19:15:00Z"
+          "LastModifiedDate": "2023-07-19T00:54:00Z"
         },
         {
           "VulnerabilityID": "CVE-2023-0401",
@@ -1697,7 +1757,7 @@
             "https://www.openssl.org/news/secadv/20230207.txt"
           ],
           "PublishedDate": "2023-02-08T20:15:00Z",
-          "LastModifiedDate": "2023-02-24T15:15:00Z"
+          "LastModifiedDate": "2023-07-19T00:54:00Z"
         },
         {
           "VulnerabilityID": "CVE-2023-0464",
@@ -1988,7 +2048,7 @@
             "https://www.openssl.org/news/secadv/20230207.txt"
           ],
           "PublishedDate": "2023-02-08T20:15:00Z",
-          "LastModifiedDate": "2023-02-24T17:13:00Z"
+          "LastModifiedDate": "2023-07-19T00:57:00Z"
         },
         {
           "VulnerabilityID": "CVE-2023-0465",
@@ -2162,6 +2222,66 @@
           ],
           "PublishedDate": "2023-04-20T17:15:00Z",
           "LastModifiedDate": "2023-05-02T16:42:00Z"
+        },
+        {
+          "VulnerabilityID": "CVE-2023-2975",
+          "PkgID": "libssl3@3.0.7-r0",
+          "PkgName": "libssl3",
+          "InstalledVersion": "3.0.7-r0",
+          "FixedVersion": "3.0.9-r2",
+          "Layer": {
+            "DiffID": "sha256:ded7a220bb058e28ee3254fbba04ca90b679070424424761a53a043b93b612bf"
+          },
+          "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-2975",
+          "DataSource": {
+            "ID": "alpine",
+            "Name": "Alpine Secdb",
+            "URL": "https://secdb.alpinelinux.org/"
+          },
+          "Title": "AES-SIV cipher implementation contains a bug that causes it to ignore empty associated data entries",
+          "Description": "Issue summary: The AES-SIV cipher implementation contains a bug that causes\nit to ignore empty associated data entries which are unauthenticated as\na consequence.\n\nImpact summary: Applications that use the AES-SIV algorithm and want to\nauthenticate empty data entries as associated data can be mislead by removing\nadding or reordering such empty entries as these are ignored by the OpenSSL\nimplementation. We are currently unaware of any such applications.\n\nThe AES-SIV algorithm allows for authentication of multiple associated\ndata entries along with the encryption. To authenticate empty data the\napplication has to call EVP_EncryptUpdate() (or EVP_CipherUpdate()) with\nNULL pointer as the output buffer and 0 as the input buffer length.\nThe AES-SIV implementation in OpenSSL just returns success for such a call\ninstead of performing the associated data authentication operation.\nThe empty data thus will not be authenticated.\n\nAs this issue does not affect non-empty associated data authentication and\nwe expect it to be rare for an application to use empty associated data\nentries this is qualified as Low severity issue.",
+          "Severity": "MEDIUM",
+          "CVSS": {
+            "redhat": {
+              "V3Vector": "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:N/I:H/A:N",
+              "V3Score": 5.9
+            }
+          },
+          "References": [
+            "http://www.openwall.com/lists/oss-security/2023/07/15/1",
+            "https://access.redhat.com/security/cve/CVE-2023-2975",
+            "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2023-2975",
+            "https://git.openssl.org/gitweb/?p=openssl.git;a=commitdiff;h=00e2f5eea29994d19293ec4e8c8775ba73678598",
+            "https://git.openssl.org/gitweb/?p=openssl.git;a=commitdiff;h=6a83f0c958811f07e0d11dfc6b5a6a98edfd5bdc",
+            "https://nvd.nist.gov/vuln/detail/CVE-2023-2975",
+            "https://www.cve.org/CVERecord?id=CVE-2023-2975",
+            "https://www.openssl.org/news/secadv/20230714.txt"
+          ],
+          "PublishedDate": "2023-07-14T12:15:00Z",
+          "LastModifiedDate": "2023-07-15T13:15:00Z"
+        },
+        {
+          "VulnerabilityID": "CVE-2023-3446",
+          "PkgID": "libssl3@3.0.7-r0",
+          "PkgName": "libssl3",
+          "InstalledVersion": "3.0.7-r0",
+          "FixedVersion": "3.0.9-r3",
+          "Layer": {
+            "DiffID": "sha256:ded7a220bb058e28ee3254fbba04ca90b679070424424761a53a043b93b612bf"
+          },
+          "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-3446",
+          "DataSource": {
+            "ID": "alpine",
+            "Name": "Alpine Secdb",
+            "URL": "https://secdb.alpinelinux.org/"
+          },
+          "Title": "Issue summary: Checking excessively long DH keys or parameters may be  ...",
+          "Description": "Excessive time spent checking DH keys and parameters",
+          "Severity": "LOW",
+          "References": [
+            "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2023-3446",
+            "https://www.openssl.org/news/secadv/20230719.txt"
+          ]
         }
       ]
     }

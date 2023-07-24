@@ -11,14 +11,14 @@ async function runTrivyScan (imageName) {
   return JSON.parse(reportStr)
 }
 
-async function runTrivyScanRoot () {
-  const { stdout, stderr } = await exec('trivy fs --format json -o report/root-scan-report.json /')
-  console.log(`error: ${stderr}`)
-  console.log('stdout:', stdout)
-  console.log('Scan report has been created')
-  const reportStr = await fs.readFile('report/root-scan-report.json', 'utf-8')
-  return JSON.parse(reportStr)
-}
+// async function runTrivyScanRoot () {
+//  const { stdout, stderr } = await exec('trivy fs --format json -o report/root-scan-report.json /')
+//  console.log(`error: ${stderr}`)
+//  console.log('stdout:', stdout)
+//  console.log('Scan report has been created')
+//  const reportStr = await fs.readFile('report/root-scan-report.json', 'utf-8')
+//  return JSON.parse(reportStr)
+// }
 
 module.exports = runTrivyScan
-module.exports = runTrivyScanRoot
+// module.exports = runTrivyScanRoot
