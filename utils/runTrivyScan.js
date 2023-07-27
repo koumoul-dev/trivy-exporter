@@ -4,12 +4,13 @@ const exec = util.promisify(require('node:child_process').exec)
 
 async function runTrivyScan (type, name) {
   console.log(`-> Enter runTrivyScan with type=${type} and name=${name}`)
-  const { stdout, stderr } = await exec(`trivy ${type} --format json -o ./data/${name}-scan-report.json ${name}`)
+  const fileName = `./data/${name.replace(/\//g, '_')}-scan-report.json`
+  const { stdout, stderr } = await exec(`trivy ${type} --format json -o ${fileName} ${name}`)
   console.log('-> After exec')
   console.log(`error: ${stderr}`)
   console.log('stdout:', stdout)
   console.log('Scan report has been created')
-  const reportStr = await fs.readFile(`./data/${name}-scan-report.json`, 'utf-8')
+  const reportStr = await fs.readFile(fileName, 'utf-8')
   return JSON.parse(reportStr)
 }
 
