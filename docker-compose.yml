@@ -9,3 +9,6 @@ services:
     image: debian:wheezy-slim
     command: sleep infinity
 
+  app3:
+    image: alpine:3.18.2
+    command: sleep infinity

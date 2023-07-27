@@ -1,6 +1,6 @@
 const http = require('http')
 
-async function getImageNames () {
+async function getContainers () {
   return new Promise((resolve, reject) => {
     // Options de la requête
     const options = {
@@ -23,12 +23,7 @@ async function getImageNames () {
         // console.log('Réponse de la requête :', data)
         // Analyser la réponse JSON
         const containers = JSON.parse(data)
-
-        // Extraire les noms d'image
-        const imageNames = [...new Set(containers.map((container) => container.Image))]
-        // console.log(imageNames)
-
-        resolve(imageNames)
+        resolve(containers.map(container => ({ name: container.Names, image: container.Image })))
 
         // Si nous souhaitons le nom de toutes les images et le nombre
         // let i = 0;
@@ -51,4 +46,4 @@ async function getImageNames () {
   })
 }
 
-module.exports = getImageNames
+module.exports = getContainers

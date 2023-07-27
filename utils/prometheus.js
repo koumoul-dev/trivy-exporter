@@ -3,6 +3,7 @@
 // /metrics serves container/process/pod specific metrics while /global-metrics
 // serves metrics for the whole service installation no matter the scaling
 
+const fs = require('node:fs/promises')
 const { createServer } = require('node:http')
 const { Counter, Gauge, register } = require('prom-client')
 
@@ -25,11 +26,10 @@ exports.vulnerabilitiesGauge = () => {
     help: 'Trivy image vulnerabilities',
     labelNames: [
       'container_name',
-      'image_digest',
       'image_registry',
       'image_repository',
       'image_tag',
-      'name',
+      // 'name',
       // 'namespace',
       // 'resource_kind',
       // 'resource_name',
@@ -38,11 +38,13 @@ exports.vulnerabilitiesGauge = () => {
   })
 }
 
+exports.register = register
+
 let server
 exports.start = async (port) => {
   server = createServer((req, res) => {
     if (req.method === 'GET' && req.url === '/metrics') {
-      register.metrics()
+      fs.readFile('data/metrics.txt', 'utf8')
         .then(metrics => {
           res.setHeader('Content-Type', register.contentType)
           res.writeHead(200)

@@ -1,10 +1,11 @@
 {
   "scripts": {
-    "dev": "nodemon index.js",
+    "dev": "CRON_RULE=\"0 * * * * *\" nodemon index.js",
     "lint": "eslint . --fix",
     "test": "mocha --timeout 1000000"
   },
   "dependencies": {
+    "@swimlane/docker-reference": "^2.0.1",
     "dockerode": "^3.3.5",
     "mocha": "^10.2.0",
     "node-cron": "^3.0.2",

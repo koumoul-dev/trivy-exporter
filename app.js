@@ -1,47 +1,68 @@
 const fs = require('node:fs/promises')
-const getImageNames = require('./utils/getImageNames')
+const { parseQualifiedName } = require('@swimlane/docker-reference')
+const cron = require('node-cron')
+const getContainers = require('./utils/getContainers')
 const runTrivyScan = require('./utils/runTrivyScan')
 const prometheus = require('./utils/prometheus')
-const parseCounter = require('./utils/parseCounter')
-const cron = require('node-cron')
+const parseCounters = require('./utils/parseCounters')
 
 const runAllScans = async () => {
   console.log('run all scans')
-  const imageNames = await getImageNames()
+  const containers = await getContainers()
+  const imageNames = [...new Set(containers.map(container => container.image))]
   const gauge = prometheus.vulnerabilitiesGauge()
 
-  for (const imageName of imageNames) {
-    console.log('Starting to scan ' + imageName)
-    const report = await runTrivyScan(imageName)
+  const scanTargets = [...imageNames.map(name => ({ type: 'image', name })), { type: 'fs', name: 'rootfs' }]
+  for (const scanTarget of scanTargets) {
+    console.log(`Starting to scan ${scanTarget.type}/${scanTarget.name}`)
+    const report = await runTrivyScan(scanTarget.type, scanTarget.name)
     console.log('Scan report', report)
 
-    const counter = await parseCounter(report)
-    console.log('Counter', counter)
+    const counters = await parseCounters(report)
+    console.log('Counters', counters)
 
-    for (const result of report.Results) {
-      const vulnerabilities = result.Vulnerabilities
-      for (const vulnerability of vulnerabilities) {
-        const severity = vulnerability.Severity
-        const count = counter.find((item) => item.severity === severity)?.count || 0
-
-        gauge.set({ container_name: report.ArtifactName, severity: vulnerability.Severity }, count)
+    for (const counter of counters) {
+      if (scanTarget.type === 'image') {
+        const imageRef = parseQualifiedName(scanTarget.name)
+        for (const container of containers.filter(container => container.image === scanTarget.name)) {
+          gauge.set({
+            container_name: container.name,
+            severity: counter.severity,
+            image_registry: imageRef.domain || 'index.docker.io',
+            image_repository: imageRef.repository,
+            image_tag: imageRef.tag
+          }, counter.count)
+        }
+      } else {
+        gauge.set({
+          container_name: `${process.env.VM_NAME || 'vm'}/${scanTarget.name}`,
+          severity: counter.Severity
+        }, counter.count)
       }
     }
   }
   console.log('Metrics', gauge.hashMap)
+  await fs.writeFile('data/metrics.txt', await prometheus.register.metrics())
   console.log('All scans have been completed')
 }
 
 exports.start = async () => {
   try {
-    await fs.mkdir('report')
+    await fs.mkdir('data')
   } catch (err) {
     if (err.code !== 'EEXIST') throw err
   }
-  await runAllScans()
+  try {
+    await fs.access('data/metrics.txt')
+  } catch (err) {
+    console.log(err)
+    if (err.code !== 'ENOENT') throw err
+    await runAllScans()
+  }
+
   await prometheus.start(9000)
 
-  cron.schedule('0 * * * * * *', async () => {
+  cron.schedule(process.env.CRON_RULE || '0 0 * * * *', async () => {
     try {
       await runAllScans()
     } catch (err) {

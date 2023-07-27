@@ -1,0 +1,21 @@
+# HELP df_internal_error A counter of errors from any service, worker, etc. Do not use for client errors, only for anomalies that should trigger alerts. Each increment should be accompanied by an error log with matching code.
+# TYPE df_internal_error counter
+
+# HELP trivy_image_vulnerabilities Trivy image vulnerabilities
+# TYPE trivy_image_vulnerabilities gauge
+trivy_image_vulnerabilities{container_name="/trivy-exporter_app3_1",severity="Critical",image_registry="index.docker.io",image_repository="alpine",image_tag="3.18.2"} 0
+trivy_image_vulnerabilities{container_name="/trivy-exporter_app3_1",severity="High",image_registry="index.docker.io",image_repository="alpine",image_tag="3.18.2"} 0
+trivy_image_vulnerabilities{container_name="/trivy-exporter_app3_1",severity="Medium",image_registry="index.docker.io",image_repository="alpine",image_tag="3.18.2"} 4
+trivy_image_vulnerabilities{container_name="/trivy-exporter_app3_1",severity="Low",image_registry="index.docker.io",image_repository="alpine",image_tag="3.18.2"} 0
+trivy_image_vulnerabilities{container_name="/trivy-exporter_app3_1",severity="Unknown",image_registry="index.docker.io",image_repository="alpine",image_tag="3.18.2"} 0
+trivy_image_vulnerabilities{container_name="/trivy-exporter_app2_1",severity="Critical",image_registry="index.docker.io",image_repository="debian",image_tag="wheezy-slim"} 22
+trivy_image_vulnerabilities{container_name="/trivy-exporter_app2_1",severity="High",image_registry="index.docker.io",image_repository="debian",image_tag="wheezy-slim"} 41
+trivy_image_vulnerabilities{container_name="/trivy-exporter_app2_1",severity="Medium",image_registry="index.docker.io",image_repository="debian",image_tag="wheezy-slim"} 52
+trivy_image_vulnerabilities{container_name="/trivy-exporter_app2_1",severity="Low",image_registry="index.docker.io",image_repository="debian",image_tag="wheezy-slim"} 43
+trivy_image_vulnerabilities{container_name="/trivy-exporter_app2_1",severity="Unknown",image_registry="index.docker.io",image_repository="debian",image_tag="wheezy-slim"} 0
+trivy_image_vulnerabilities{container_name="/trivy-exporter_app1_1",severity="Critical",image_registry="index.docker.io",image_repository="alpine",image_tag="3.17.0"} 0
+trivy_image_vulnerabilities{container_name="/trivy-exporter_app1_1",severity="High",image_registry="index.docker.io",image_repository="alpine",image_tag="3.17.0"} 18
+trivy_image_vulnerabilities{container_name="/trivy-exporter_app1_1",severity="Medium",image_registry="index.docker.io",image_repository="alpine",image_tag="3.17.0"} 14
+trivy_image_vulnerabilities{container_name="/trivy-exporter_app1_1",severity="Low",image_registry="index.docker.io",image_repository="alpine",image_tag="3.17.0"} 0
+trivy_image_vulnerabilities{container_name="/trivy-exporter_app1_1",severity="Unknown",image_registry="index.docker.io",image_repository="alpine",image_tag="3.17.0"} 0
+trivy_image_vulnerabilities{container_name="vm/rootfs",severity="undefined"} 0
