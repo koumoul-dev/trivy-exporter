@@ -83,6 +83,7 @@ const runAllScans = async () => {
         }
       }
     }
+    console.log('Fin de la gauge Vulnerabilities ID')
   }
   console.log('Metrics', gaugeImageVulnerabilities.hashMap)
   await fs.writeFile('data/metrics.txt', await prometheus.register.metrics())
