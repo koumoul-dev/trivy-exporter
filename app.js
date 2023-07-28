@@ -10,7 +10,8 @@ const runAllScans = async () => {
   console.log('run all scans')
   const containers = await getContainers()
   const imageNames = [...new Set(containers.map(container => container.image))]
-  const gauge = prometheus.vulnerabilitiesGauge()
+  const gaugeImageVulnerabilities = prometheus.vulnerabilitiesGauge()
+  const gaugeVulnerabilityID = prometheus.vulnerabilitiesIDGauge()
 
   const scanTargets = [...imageNames.map(name => ({ type: 'image', name })), { type: 'fs', name: 'rootfs' }]
   for (const scanTarget of scanTargets) {
@@ -25,23 +26,65 @@ const runAllScans = async () => {
       if (scanTarget.type === 'image') {
         const imageRef = parseQualifiedName(scanTarget.name)
         for (const container of containers.filter(container => container.image === scanTarget.name)) {
-          gauge.set({
+          gaugeImageVulnerabilities.set({
             container_name: container.name,
             severity: counter.severity,
             image_registry: imageRef.domain || 'index.docker.io',
             image_repository: imageRef.repository,
-            image_tag: imageRef.tag
+            image_tag: imageRef.tag,
+            namespace: container.namespace
           }, counter.count)
         }
       } else {
-        gauge.set({
+        gaugeImageVulnerabilities.set({
           container_name: `${process.env.VM_NAME || 'vm'}/${scanTarget.name}`,
-          severity: counter.Severity
+          severity: counter.Severity,
+          namespace: `${process.env.VM_NAME || 'vm'}/${scanTarget.name}`
         }, counter.count)
       }
     }
+    console.log('Fin de la gauge ImageVulnerabilities')
+
+    if (scanTarget.type === 'image') {
+      const imageRef = parseQualifiedName(scanTarget.name)
+      const results = report.Results || []
+      for (const result of results) {
+        const vulnerabilities = result.Vulnerabilities
+        console.log('Vulnerabilities', vulnerabilities)
+        for (const vulnerability of vulnerabilities) {
+          for (const container of containers.filter(container => container.image === scanTarget.name)) {
+            gaugeVulnerabilityID.set({
+              container_name: container.name,
+              severity: vulnerability.Severity,
+              image_registry: imageRef.domain || 'index.docker.io',
+              image_repository: imageRef.repository,
+              image_tag: imageRef.tag,
+              namespace: container.namespace,
+              vuln_id: vulnerability.VulnerabilityID,
+              vuln_score: vulnerability.CVSS.Score,
+              vuln_title: vulnerability.Title
+            }, 0)
+          }
+        }
+      }
+    } else {
+      const results = report.Results || []
+      for (const result of results) {
+        const vulnerabilities = result.Vulnerabilities
+        for (const vulnerability of vulnerabilities) {
+          gaugeImageVulnerabilities.set({
+            container_name: `${process.env.VM_NAME || 'vm'}/${scanTarget.name}`,
+            severity: vulnerability.Severity,
+            namespace: `${process.env.VM_NAME || 'vm'}/${scanTarget.name}`,
+            vuln_id: vulnerability.VulnerabilityID,
+            vuln_score: vulnerability.CVSS.Score,
+            vuln_title: vulnerability.Title
+          })
+        }
+      }
+    }
   }
-  console.log('Metrics', gauge.hashMap)
+  console.log('Metrics', gaugeImageVulnerabilities.hashMap)
   await fs.writeFile('data/metrics.txt', await prometheus.register.metrics())
   console.log('All scans have been completed')
 }

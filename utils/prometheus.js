@@ -30,10 +30,32 @@ exports.vulnerabilitiesGauge = () => {
       'image_repository',
       'image_tag',
       // 'name',
-      // 'namespace',
+      'namespace',
       // 'resource_kind',
       // 'resource_name',
       'severity'
+    ]
+  })
+}
+
+exports.vulnerabilitiesIDGauge = () => {
+  register.removeSingleMetric('trivy_vulnerability_id')
+  return new Gauge({
+    name: 'trivy_vulnerability_id',
+    help: 'Trivy vulnerability ID',
+    labelNames: [
+      'container_name',
+      'image_registry',
+      'image_repository',
+      'image_tag',
+      // 'name',
+      'namespace',
+      // 'resource_kind',
+      // 'resource_name',
+      'severity',
+      'vuln_id',
+      'vuln_score',
+      'vuln_title'
     ]
   })
 }
