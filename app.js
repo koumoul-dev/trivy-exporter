@@ -26,6 +26,7 @@ const runAllScans = async () => {
       if (scanTarget.type === 'image') {
         const imageRef = parseQualifiedName(scanTarget.name)
         for (const container of containers.filter(container => container.image === scanTarget.name)) {
+          container.name[0] = container.name[0].replace('/', '')
           gaugeImageVulnerabilities.set({
             container_name: container.name,
             severity: counter.severity,
@@ -53,6 +54,7 @@ const runAllScans = async () => {
         console.log('Vulnerabilities', vulnerabilities)
         for (const vulnerability of vulnerabilities) {
           for (const container of containers.filter(container => container.image === scanTarget.name)) {
+            container.name[0] = container.name[0].replace('/', '')
             gaugeVulnerabilityID.set({
               container_name: container.name,
               severity: vulnerability.Severity,
