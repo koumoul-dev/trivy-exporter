@@ -55,6 +55,7 @@ const runAllScans = async () => {
             const v3Scores = Object.values(vulnerability.CVSS).map(item => item.V3Score).filter(score => score !== undefined)
             const allScores = v2Scores.concat(v3Scores)
             const maxScore = Math.max(...allScores)
+            console.log('--->', vulnerability.VulnerabilityID, maxScore, allScores, v2Scores, v3Scores)
             gaugeVulnerabilityID.set({
               container_name: container.name,
               severity: vulnerability.Severity,
