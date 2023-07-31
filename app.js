@@ -30,14 +30,14 @@ const runAllScans = async () => {
             image_registry: imageRef.domain || 'index.docker.io',
             image_repository: imageRef.repository,
             image_tag: imageRef.tag,
-            namespace: process.env.VM_NAME || 'trivy-exporter'
+            namespace: process.env.NAMESPACE || 'default'
           }, counter.count)
         }
       } else {
         gaugeImageVulnerabilities.set({
           container_name: `${process.env.VM_NAME || 'vm'}/${scanTarget.name}`,
           severity: counter.Severity,
-          namespace: process.env.VM_NAME || 'trivy-exporter'
+          namespace: process.env.NAMESPACE || 'default'
         }, counter.count)
       }
     }
@@ -62,7 +62,7 @@ const runAllScans = async () => {
               image_registry: imageRef.domain || 'index.docker.io',
               image_repository: imageRef.repository,
               image_tag: imageRef.tag,
-              namespace: process.env.VM_NAME || 'trivy-exporter',
+              namespace: process.env.NAMESPACE || 'default',
               vuln_id: vulnerability.VulnerabilityID,
               vuln_title: vulnerability.Title
             }
@@ -83,7 +83,7 @@ const runAllScans = async () => {
           gaugeVulnerabilityID.set({
             container_name: `${process.env.VM_NAME || 'vm'}/${scanTarget.name}`,
             severity: vulnerability.Severity,
-            namespace: process.env.VM_NAME || 'trivy-exporter',
+            namespace: process.env.NAMESPACE || 'default',
             vuln_id: vulnerability.VulnerabilityID,
             vuln_score: maxScore,
             vuln_title: vulnerability.Title
