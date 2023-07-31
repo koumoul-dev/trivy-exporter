@@ -14,7 +14,7 @@ describe('Trivy exporter', () => {
 
     // Do a test execute mkdir comma,nd when report folder does not exist
     it('should list images of running containers', async () => {
-      const getImageNames = require('../utils/getImageNames')
+      const getImageNames = require('../utils/getContainers')
       const imageNames = await getImageNames()
       console.log(imageNames)
 

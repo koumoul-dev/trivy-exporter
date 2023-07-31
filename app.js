@@ -55,6 +55,10 @@ const runAllScans = async () => {
         for (const vulnerability of vulnerabilities) {
           for (const container of containers.filter(container => container.image === scanTarget.name)) {
             container.name[0] = container.name[0].replace('/', '')
+            const v2Scores = Object.values(vulnerability.CVSS).map(item => item.V2Score).filter(score => score !== undefined)
+            const v3Scores = Object.values(vulnerability.CVSS).map(item => item.V3Score).filter(score => score !== undefined)
+            const allScores = v2Scores.concat(v3Scores)
+            const maxScore = Math.max(...allScores)
             gaugeVulnerabilityID.set({
               container_name: container.name,
               severity: vulnerability.Severity,
@@ -63,7 +67,7 @@ const runAllScans = async () => {
               image_tag: imageRef.tag,
               namespace: container.namespace,
               vuln_id: vulnerability.VulnerabilityID,
-              vuln_score: vulnerability.CVSS.Score,
+              vuln_score: maxScore,
               vuln_title: vulnerability.Title
             }, 0)
           }
@@ -74,12 +78,16 @@ const runAllScans = async () => {
       for (const result of results) {
         const vulnerabilities = result.Vulnerabilities
         for (const vulnerability of vulnerabilities) {
+          const v2Scores = Object.values(vulnerability.CVSS).map(item => item.V2Score).filter(score => score !== undefined)
+          const v3Scores = Object.values(vulnerability.CVSS).map(item => item.V3Score).filter(score => score !== undefined)
+          const allScores = v2Scores.concat(v3Scores)
+          const maxScore = Math.max(...allScores)
           gaugeImageVulnerabilities.set({
             container_name: `${process.env.VM_NAME || 'vm'}/${scanTarget.name}`,
             severity: vulnerability.Severity,
             namespace: `${process.env.VM_NAME || 'vm'}/${scanTarget.name}`,
             vuln_id: vulnerability.VulnerabilityID,
-            vuln_score: vulnerability.CVSS.Score,
+            vuln_score: maxScore,
             vuln_title: vulnerability.Title
           })
         }
