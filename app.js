@@ -17,10 +17,7 @@ const runAllScans = async () => {
   for (const scanTarget of scanTargets) {
     console.log(`Starting to scan ${scanTarget.type}/${scanTarget.name}`)
     const report = await runTrivyScan(scanTarget.type, scanTarget.name)
-    console.log('Scan report', report)
-
     const counters = await parseCounters(report)
-    console.log('Counters', counters)
 
     for (const counter of counters) {
       if (scanTarget.type === 'image') {
@@ -51,7 +48,6 @@ const runAllScans = async () => {
       const results = report.Results || []
       for (const result of results) {
         const vulnerabilities = result.Vulnerabilities
-        console.log('Vulnerabilities', vulnerabilities)
         for (const vulnerability of vulnerabilities) {
           for (const container of containers.filter(container => container.image === scanTarget.name)) {
             container.name[0] = container.name[0].replace('/', '')
