@@ -44,6 +44,7 @@ const runAllScans = async () => {
         }, counter.count)
       }
     }
+    console.log('Metrics', gaugeImageVulnerabilities.hashMap)
     console.log('Fin de la gauge ImageVulnerabilities')
 
     if (scanTarget.type === 'image') {
@@ -51,7 +52,6 @@ const runAllScans = async () => {
       const results = report.Results || []
       for (const result of results) {
         const vulnerabilities = result.Vulnerabilities
-        console.log('Vulnerabilities', vulnerabilities)
         for (const vulnerability of vulnerabilities) {
           for (const container of containers.filter(container => container.image === scanTarget.name)) {
             container.name[0] = container.name[0].replace('/', '')
@@ -82,7 +82,7 @@ const runAllScans = async () => {
           const v3Scores = Object.values(vulnerability.CVSS).map(item => item.V3Score).filter(score => score !== undefined)
           const allScores = v2Scores.concat(v3Scores)
           const maxScore = Math.max(...allScores)
-          gaugeImageVulnerabilities.set({
+          gaugeVulnerabilityID.set({
             container_name: `${process.env.VM_NAME || 'vm'}/${scanTarget.name}`,
             severity: vulnerability.Severity,
             namespace: process.env.VM_NAME || 'trivy-exporter',
@@ -93,9 +93,9 @@ const runAllScans = async () => {
         }
       }
     }
+    console.log('Metrics', gaugeVulnerabilityID.hashMap)
     console.log('Fin de la gauge Vulnerabilities ID')
   }
-  console.log('Metrics', gaugeImageVulnerabilities.hashMap)
   await fs.writeFile('data/metrics.txt', await prometheus.register.metrics())
   console.log('All scans have been completed')
 }
