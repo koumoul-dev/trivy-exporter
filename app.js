@@ -51,12 +51,12 @@ const runAllScans = async () => {
         for (const vulnerability of vulnerabilities) {
           for (const container of containers.filter(container => container.image === scanTarget.name)) {
             container.name[0] = container.name[0].replace('/', '')
-            const v2Scores = Object.values(vulnerability.CVSS).map(item => item.V2Score).filter(score => score !== undefined)
-            const v3Scores = Object.values(vulnerability.CVSS).map(item => item.V3Score).filter(score => score !== undefined)
+            const v2Scores = Object.values(vulnerability.CVSS || {}).map(item => item.V2Score).filter(score => score !== undefined)
+            const v3Scores = Object.values(vulnerability.CVSS || {}).map(item => item.V3Score).filter(score => score !== undefined)
             const allScores = v2Scores.concat(v3Scores)
             const maxScore = Math.max(...allScores)
             console.log('--->', vulnerability.VulnerabilityID, maxScore, allScores, v2Scores, v3Scores)
-            gaugeVulnerabilityID.set({
+            const labels = {
               container_name: container.name,
               severity: vulnerability.Severity,
               image_registry: imageRef.domain || 'index.docker.io',
@@ -64,9 +64,10 @@ const runAllScans = async () => {
               image_tag: imageRef.tag,
               namespace: process.env.VM_NAME || 'trivy-exporter',
               vuln_id: vulnerability.VulnerabilityID,
-              vuln_score: maxScore,
               vuln_title: vulnerability.Title
-            }, 0)
+            }
+            if (maxScore > 0) labels.vuln_score = maxScore
+            gaugeVulnerabilityID.set(labels, 0)
           }
         }
       }
