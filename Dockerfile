@@ -1,9 +1,9 @@
 ############################################################################################################
 # Stage: prepare a base image with all native utils pre-installed, used both by builder and definitive image
 
-FROM node:16.18.0-alpine3.15 AS trivy
+FROM node:16.20.2-alpine3.18 AS trivy
 
-ARG TRIVY_VERSION=0.43.0
+ARG TRIVY_VERSION=0.48.3
 
 RUN apk update && apk add --no-cache ca-certificates git rpm && update-ca-certificates
 
@@ -46,7 +46,7 @@ RUN npm prune --production && \
 
 ######################################
 # Stage: final image
-FROM node:16.18.0-alpine3.15
+FROM node:16.20.2-alpine3.18
 
 WORKDIR /webapp
 RUN apk add --no-cache dumb-init
