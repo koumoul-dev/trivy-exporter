@@ -98,7 +98,8 @@ const runAllScans = async () => {
   console.log('all scans completed')
 }
 
-let runningScan = false
+let runningScan = null
+let stopped = false
 exports.start = async () => {
   await ensureDir('data')
   if (!(await fileExists('data/metrics.txt'))) {
@@ -109,16 +110,25 @@ exports.start = async () => {
 
   // every day at midnight by default
   cron.schedule(process.env.CRON_RULE || '0 0 0 * * *', async () => {
+    if (stopped) return
     if (runningScan) {
       console.log('scan already running, skipping')
       return
     }
-    runningScan = true
-    await runAllScans()
-    runningScan = false
+    runningScan = runAllScans()
+    await runningScan
+    runningScan = null
   })
 }
 
 exports.stop = async () => {
+  stopped = true
+  if (runningScan) {
+    try {
+      await runningScan
+    } catch (err) {
+      // ignore
+    }
+  }
   await prometheus.stop()
 }
