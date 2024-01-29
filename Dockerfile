@@ -1,7 +1,7 @@
 ############################################################################################################
 # Stage: prepare a base image with all native utils pre-installed, used both by builder and definitive image
 
-FROM node:16.20.2-alpine3.18 AS trivy
+FROM node:20.11.0-alpine3.18 AS trivy
 
 ARG TRIVY_VERSION=0.48.3
 
@@ -46,7 +46,7 @@ RUN npm prune --production && \
 
 ######################################
 # Stage: final image
-FROM node:16.20.2-alpine3.18
+FROM node:20.11.0-alpine3.18
 
 WORKDIR /webapp
 RUN apk add --no-cache dumb-init
@@ -75,5 +75,5 @@ VOLUME /webapp/data
 VOLUME /webapp/rootfs
 EXPOSE 9000
 
-# --single-child is necessary for worker to wait on its tasks
+# --single-child is necessary to wait for running scanners to finish
 CMD ["dumb-init", "--single-child", "node", "index.js"]

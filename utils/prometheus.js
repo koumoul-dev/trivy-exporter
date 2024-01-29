@@ -5,59 +5,45 @@
 
 const fs = require('node:fs/promises')
 const { createServer } = require('node:http')
-const { Counter, Gauge, register } = require('prom-client')
+const { Gauge, register } = require('prom-client')
 
-// local metrics incremented throughout the code
-const internalErrorCounter = new Counter({
-  name: 'df_internal_error',
-  help: 'A counter of errors from any service, worker, etc. Do not use for client errors, only for anomalies that should trigger alerts. Each increment should be accompanied by an error log with matching code.',
-  labelNames: ['errorCode']
+exports.vulnerabilitiesGauge = new Gauge({
+  name: 'trivy_image_vulnerabilities',
+  help: 'Trivy image vulnerabilities',
+  labelNames: [
+    'container_name',
+    'image_registry',
+    'image_repository',
+    'image_tag',
+    // 'name',
+    'namespace',
+    // 'resource_kind',
+    // 'resource_name',
+    'severity'
+  ]
 })
 
-exports.internalError = (errorCode, message, ...optionalParams) => {
-  internalErrorCounter.inc({ errorCode })
-  console.error(`[${errorCode}] ${message}`, ...optionalParams)
-}
+exports.vulnerabilitiesIDGauge = new Gauge({
+  name: 'trivy_vulnerability_id',
+  help: 'Trivy vulnerability ID',
+  labelNames: [
+    'container_name',
+    'image_registry',
+    'image_repository',
+    'image_tag',
+    // 'name',
+    'namespace',
+    // 'resource_kind',
+    // 'resource_name',
+    'severity',
+    'vuln_id',
+    'vuln_score',
+    'vuln_title'
+  ]
+})
 
-exports.vulnerabilitiesGauge = () => {
-  register.removeSingleMetric('trivy_image_vulnerabilities')
-  return new Gauge({
-    name: 'trivy_image_vulnerabilities',
-    help: 'Trivy image vulnerabilities',
-    labelNames: [
-      'container_name',
-      'image_registry',
-      'image_repository',
-      'image_tag',
-      // 'name',
-      'namespace',
-      // 'resource_kind',
-      // 'resource_name',
-      'severity'
-    ]
-  })
-}
-
-exports.vulnerabilitiesIDGauge = () => {
-  register.removeSingleMetric('trivy_vulnerability_id')
-  return new Gauge({
-    name: 'trivy_vulnerability_id',
-    help: 'Trivy vulnerability ID',
-    labelNames: [
-      'container_name',
-      'image_registry',
-      'image_repository',
-      'image_tag',
-      // 'name',
-      'namespace',
-      // 'resource_kind',
-      // 'resource_name',
-      'severity',
-      'vuln_id',
-      'vuln_score',
-      'vuln_title'
-    ]
-  })
+exports.reset = () => {
+  register.resetMetrics()
 }
 
 exports.register = register
