@@ -3,11 +3,11 @@
 // /metrics serves container/process/pod specific metrics while /global-metrics
 // serves metrics for the whole service installation no matter the scaling
 
-const fs = require('node:fs/promises')
-const { createServer } = require('node:http')
-const { Gauge, register } = require('prom-client')
+import fs from 'node:fs/promises'
+import { createServer, type Server } from 'node:http'
+import { Gauge, register } from 'prom-client'
 
-exports.vulnerabilitiesGauge = new Gauge({
+export const vulnerabilitiesGauge = new Gauge({
   name: 'trivy_image_vulnerabilities',
   help: 'Trivy image vulnerabilities',
   labelNames: [
@@ -23,7 +23,7 @@ exports.vulnerabilitiesGauge = new Gauge({
   ]
 })
 
-exports.vulnerabilitiesIDGauge = new Gauge({
+export const vulnerabilitiesIDGauge = new Gauge({
   name: 'trivy_vulnerability_id',
   help: 'Trivy vulnerability ID',
   labelNames: [
@@ -42,14 +42,16 @@ exports.vulnerabilitiesIDGauge = new Gauge({
   ]
 })
 
-exports.reset = () => {
+export const reset = () => {
   register.resetMetrics()
 }
 
-exports.register = register
+export const store = async () => {
+  await fs.writeFile('data/metrics.txt', await register.metrics())
+}
 
-let server
-exports.start = async (port) => {
+let server: Server
+export const start = async (port: number) => {
   server = createServer((req, res) => {
     if (req.method === 'GET' && req.url === '/metrics') {
       fs.readFile('data/metrics.txt', 'utf8')
@@ -74,6 +76,6 @@ exports.start = async (port) => {
   console.log(`Prometheus metrics server available on http://localhost:${port}/metrics`)
 }
 
-exports.stop = async () => {
+export const stop = async () => {
   if (server) server.close()
 }

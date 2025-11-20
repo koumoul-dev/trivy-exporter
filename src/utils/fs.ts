@@ -1,25 +1,25 @@
-const fs = require('node:fs/promises')
+import fs from 'node:fs/promises'
 
-exports.ensureDir = async (dir) => {
+export async function ensureDir (dir: string) {
   try {
     await fs.mkdir(dir)
-  } catch (err) {
+  } catch (err: any) {
     if (err.code !== 'EEXIST') throw err
   }
 }
 
-exports.emptyDir = async (dir) => {
-  await this.ensureDir(dir)
+export async function emptyDir (dir: string) {
+  await ensureDir(dir)
   const files = await fs.readdir(dir)
   for (const file of files) {
     await fs.unlink(`${dir}/${file}`)
   }
 }
 
-exports.fileExists = async (file) => {
+export async function fileExists (file: string) {
   try {
     await fs.access(file)
-  } catch (err) {
+  } catch (err: any) {
     if (err.code === 'ENOENT') return false
     throw err
   }
