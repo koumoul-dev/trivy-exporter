@@ -3,7 +3,7 @@ import cron from 'node-cron'
 import { getContainers } from './utils/docker.ts'
 import { runScan, parseSeverityCounts } from './utils/trivy.ts'
 import * as prometheus from './utils/prometheus.ts'
-const { ensureDir, emptyDir, fileExists } = require('./utils/fs')
+import { ensureDir, emptyDir, fileExists } from './utils/fs.ts'
 
 const runAllScans = async () => {
   console.log('run all scans')
@@ -97,7 +97,7 @@ const runAllScans = async () => {
 
 let runningScan: Promise<void> | null = null
 let stopped = false
-exports.start = async () => {
+export const start = async () => {
   await ensureDir('data')
   if (!(await fileExists('data/metrics.txt'))) {
     await runAllScans()
@@ -118,7 +118,7 @@ exports.start = async () => {
   })
 }
 
-exports.stop = async () => {
+export const stop = async () => {
   stopped = true
   if (runningScan) {
     try {

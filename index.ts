@@ -1,4 +1,4 @@
-import app from './src/app.ts'
+import * as app from './src/app.ts'
 
 app.start().catch(err => {
   console.error('failed to start', err)

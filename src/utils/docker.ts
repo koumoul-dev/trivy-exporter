@@ -25,7 +25,7 @@ export async function getContainers (): Promise<ContainerRef[]> {
 
       res.on('end', () => {
         const containers: any[] = JSON.parse(data)
-        resolve(containers.map(container => ({ name: prepareContainerName(container.Names), image: container.Image })))
+        resolve(containers.map(container => ({ name: prepareContainerName(container.Names[0]), image: container.Image })))
       })
     })
 

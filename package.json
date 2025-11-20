@@ -5,7 +5,10 @@
   "scripts": {
     "dev": "CRON_RULE=\"0 * * * * *\" node --watch index.js",
     "lint": "eslint .",
-    "test": "NODE_ENV=test node --disable-warning=ExperimentalWarning --test-force-exit --test-concurrency=1 --test test/*.js"
+    "check-types": "tsc",
+    "prepare": "husky || true",
+    "test": "NODE_ENV=test node --disable-warning=ExperimentalWarning --test-force-exit --test-concurrency=1 --test test/*.ts",
+    "quality": "npm run lint && npm run check-types && npm run test && npm audit --omit=dev --audit-level=critical"
   },
   "license": "MIT",
   "dependencies": {
@@ -14,10 +17,13 @@
     "prom-client": "^14.2.0"
   },
   "devDependencies": {
+    "@commitlint/cli": "^20.1.0",
+    "@commitlint/config-conventional": "^20.0.0",
     "@types/node": "^24.10.1",
     "@types/node-cron": "^3.0.11",
     "clean-modules": "^3.1.1",
     "eslint": "^9.39.1",
+    "husky": "^9.1.7",
     "neostandard": "^0.12.2",
     "typescript": "^5.9.3"
   }
