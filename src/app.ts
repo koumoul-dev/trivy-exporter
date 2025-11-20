@@ -1,10 +1,8 @@
-const fs = require('node:fs/promises')
-const { parseQualifiedName } = require('@swimlane/docker-reference')
-const cron = require('node-cron')
-const getContainers = require('./utils/getContainers')
-const runTrivyScan = require('./utils/runTrivyScan')
-const prometheus = require('./utils/prometheus')
-const parseCounters = require('./utils/parseCounters')
+import { parseQualifiedName } from '@swimlane/docker-reference'
+import cron from 'node-cron'
+import { getContainers } from './utils/docker.ts'
+import { runScan, parseSeverityCounts } from './utils/trivy.ts'
+import * as prometheus from './utils/prometheus.ts'
 const { ensureDir, emptyDir, fileExists } = require('./utils/fs')
 
 const runAllScans = async () => {
@@ -14,32 +12,31 @@ const runAllScans = async () => {
   const containers = await getContainers()
   const imageNames = [...new Set(containers.map(container => container.image))]
 
-  const scanTargets = [...imageNames.map(name => ({ type: 'image', name })), { type: 'fs', name: 'rootfs' }]
+  const scanTargets: { type: 'image' | 'fs', name: string }[] = [...imageNames.map(name => ({ type: 'image' as const, name })), { type: 'fs', name: 'rootfs' }]
   for (const scanTarget of scanTargets) {
     console.log(`scan ${scanTarget.type}/${scanTarget.name}`)
-    const report = await runTrivyScan(scanTarget.type, scanTarget.name)
-    const counters = await parseCounters(report)
+    const report = await runScan(scanTarget.type, scanTarget.name)
+    const severityCounts = await parseSeverityCounts(report)
 
-    for (const counter of counters) {
+    for (const [severity, count] of Object.entries(severityCounts)) {
       if (scanTarget.type === 'image') {
         const imageRef = parseQualifiedName(scanTarget.name)
         for (const container of containers.filter(container => container.image === scanTarget.name)) {
-          container.name[0] = container.name[0].replace('/', '')
           prometheus.vulnerabilitiesGauge.set({
             container_name: container.name,
-            severity: counter.severity,
+            severity,
             image_registry: imageRef.domain || 'index.docker.io',
             image_repository: imageRef.repository,
             image_tag: imageRef.tag,
             namespace: process.env.NAMESPACE || 'default'
-          }, counter.count)
+          }, count)
         }
       } else {
         prometheus.vulnerabilitiesGauge.set({
           container_name: `${process.env.VM_NAME || 'vm'}/${scanTarget.name}`,
-          severity: counter.Severity,
+          severity,
           namespace: process.env.NAMESPACE || 'default'
-        }, counter.count)
+        }, count)
       }
     }
     console.log('gauge "Trivy image vulnerabilities" ok')
@@ -51,12 +48,11 @@ const runAllScans = async () => {
         const vulnerabilities = result.Vulnerabilities || []
         for (const vulnerability of vulnerabilities) {
           for (const container of containers.filter(container => container.image === scanTarget.name)) {
-            container.name[0] = container.name[0].replace('/', '')
-            const v2Scores = Object.values(vulnerability.CVSS || {}).map(item => item.V2Score).filter(score => score !== undefined)
-            const v3Scores = Object.values(vulnerability.CVSS || {}).map(item => item.V3Score).filter(score => score !== undefined)
+            const v2Scores = Object.values(vulnerability.CVSS || {}).map((item: any) => item.V2Score).filter(score => score !== undefined)
+            const v3Scores = Object.values(vulnerability.CVSS || {}).map((item: any) => item.V3Score).filter(score => score !== undefined)
             const allScores = v2Scores.concat(v3Scores)
             const maxScore = Math.max(...allScores)
-            const labels = {
+            const labels: Record<string, string | number | undefined> = {
               container_name: container.name,
               severity: vulnerability.Severity,
               image_registry: imageRef.domain || 'index.docker.io',
@@ -76,8 +72,8 @@ const runAllScans = async () => {
       for (const result of results) {
         const vulnerabilities = result.Vulnerabilities || []
         for (const vulnerability of vulnerabilities) {
-          const v2Scores = Object.values(vulnerability.CVSS).map(item => item.V2Score).filter(score => score !== undefined)
-          const v3Scores = Object.values(vulnerability.CVSS).map(item => item.V3Score).filter(score => score !== undefined)
+          const v2Scores = Object.values(vulnerability.CVSS).map((item: any) => item.V2Score).filter(score => score !== undefined)
+          const v3Scores = Object.values(vulnerability.CVSS).map((item: any) => item.V3Score).filter(score => score !== undefined)
           const allScores = v2Scores.concat(v3Scores)
           const maxScore = Math.max(...allScores)
           prometheus.vulnerabilitiesIDGauge.set({
@@ -87,18 +83,19 @@ const runAllScans = async () => {
             vuln_id: vulnerability.VulnerabilityID,
             vuln_score: maxScore,
             vuln_title: vulnerability.Title
-          })
+          }, 1)
         }
       }
     }
     console.log('gauge "Trivy vulnerability ID" ok')
   }
-  await fs.writeFile('data/metrics.txt', await prometheus.register.metrics())
+
+  await prometheus.store()
   prometheus.reset()
   console.log('all scans completed')
 }
 
-let runningScan = null
+let runningScan: Promise<void> | null = null
 let stopped = false
 exports.start = async () => {
   await ensureDir('data')

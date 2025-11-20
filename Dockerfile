@@ -1,9 +1,9 @@
 ############################################################################################################
 # Stage: prepare a base image with all native utils pre-installed, used both by builder and definitive image
 
-FROM node:20.11.0-alpine3.18 AS trivy
+FROM node:24.11.1-alpine3.22 AS trivy
 
-ARG TRIVY_VERSION=0.48.3
+ARG TRIVY_VERSION=0.67.2
 
 RUN apk update && apk add --no-cache ca-certificates git rpm && update-ca-certificates
 
@@ -69,7 +69,6 @@ COPY --from=trivy /usr/local/bin/trivy /usr/local/bin/trivy
 
 # configure node webapp environment
 ENV NODE_ENV production
-# USER node
 VOLUME /var/run/docker.sock
 VOLUME /webapp/data
 VOLUME /webapp/rootfs
