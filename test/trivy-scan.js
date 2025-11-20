@@ -1,11 +1,11 @@
 import { strict as assert } from 'node:assert'
 import { it, describe } from 'node:test'
 
-import runTrivyScan from '../utils/runTrivyScan.js'
-import prometheus from '../utils/prometheus.js'
-import parseCounter from '../utils/parseCounters.js'
-import getContainers from '../utils/getContainers.js'
-import app from '../app.js'
+import runTrivyScan from '../src/utils/runTrivyScan.js'
+import prometheus from '../src/utils/prometheus.js'
+import parseCounter from '../src/utils/parseCounters.js'
+import getContainers from '../src/utils/getContainers.js'
+import app from '../src/app.js'
 
 describe('Trivy exporter', () => {
   describe('Trivy scan', () => {
