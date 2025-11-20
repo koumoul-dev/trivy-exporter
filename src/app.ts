@@ -83,7 +83,7 @@ const runAllScans = async () => {
             vuln_id: vulnerability.VulnerabilityID,
             vuln_score: maxScore,
             vuln_title: vulnerability.Title
-          }, 1)
+          }, 0)
         }
       }
     }

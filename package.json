@@ -3,7 +3,7 @@
   "version": "1.1.1",
   "type": "module",
   "scripts": {
-    "dev": "CRON_RULE=\"0 * * * * *\" node --watch index.js",
+    "dev": "CRON_RULE=\"0 * * * * *\" node --watch index.ts",
     "lint": "eslint .",
     "check-types": "tsc",
     "prepare": "husky || true",
@@ -21,7 +21,6 @@
     "@commitlint/config-conventional": "^20.0.0",
     "@types/node": "^24.10.1",
     "@types/node-cron": "^3.0.11",
-    "clean-modules": "^3.1.1",
     "eslint": "^9.39.1",
     "husky": "^9.1.7",
     "neostandard": "^0.12.2",
