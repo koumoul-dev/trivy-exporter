@@ -5,6 +5,10 @@ import { spawn } from 'node:child_process'
 const skipDirs = process.env.SKIP_DIRS ? process.env.SKIP_DIRS.split(',') : []
 skipDirs.push('/var/lib/docker')
 
+const ignoreUnfixed = process.env.IGNORE_UNFIXED === '1' || process.env.IGNORE_UNFIXED?.toLowerCase() === 'true'
+
+const severityFilter = process.env.SEVERITY
+
 export type Severity = 'Critical' | 'High' | 'Medium' | 'Low' | 'Unknown'
 
 export type SeverityCounts = Partial<Record<Severity, number>>
@@ -27,6 +31,11 @@ function execScan (type: 'fs' | 'image', name: string): Promise<string> {
   return new Promise((resolve, reject) => {
     const fileName = `./data/reports/${name.replace(/\//g, '_')}-scan-report.json`
     const args = [type, '--scanners', 'vuln', '--cache-dir', 'data/cache', '--format', 'json', '-o', fileName]
+    if (ignoreUnfixed) args.push('--ignore-unfixed')
+    if (severityFilter) {
+      args.push('--severity')
+      args.push(severityFilter)
+    }
     args.push(name)
     if (type === 'fs' && name === 'rootfs') {
       for (const skipDir of skipDirs) {

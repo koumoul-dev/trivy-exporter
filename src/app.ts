@@ -72,14 +72,13 @@ const runAllScans = async () => {
       for (const result of results) {
         const vulnerabilities = result.Vulnerabilities || []
         for (const vulnerability of vulnerabilities) {
-          if (!vulnerability.CVSS) {
-            console.log('vulnerability without CVSS reference', vulnerability)
-            continue
+          let maxScore
+          if (vulnerability.CVSS) {
+            const v2Scores = Object.values(vulnerability.CVSS).map((item: any) => item.V2Score).filter(score => score !== undefined)
+            const v3Scores = Object.values(vulnerability.CVSS).map((item: any) => item.V3Score).filter(score => score !== undefined)
+            const allScores = v2Scores.concat(v3Scores)
+            maxScore = Math.max(...allScores)
           }
-          const v2Scores = Object.values(vulnerability.CVSS).map((item: any) => item.V2Score).filter(score => score !== undefined)
-          const v3Scores = Object.values(vulnerability.CVSS).map((item: any) => item.V3Score).filter(score => score !== undefined)
-          const allScores = v2Scores.concat(v3Scores)
-          const maxScore = Math.max(...allScores)
           prometheus.vulnerabilitiesIDGauge.set({
             container_name: `${process.env.VM_NAME || 'vm'}/${scanTarget.name}`,
             severity: vulnerability.Severity,
