@@ -5,6 +5,8 @@ import { runScan, parseSeverityCounts } from './utils/trivy.ts'
 import * as prometheus from './utils/prometheus.ts'
 import { ensureDir, emptyDir, fileExists } from './utils/fs.ts'
 
+const enableVulnId = process.env.ENABLE_VULN_ID === '1' || process.env.ENABLE_VULN_ID?.toLowerCase() === 'true'
+
 const runAllScans = async () => {
   console.log('run all scans')
   await emptyDir('data/reports')
@@ -41,56 +43,58 @@ const runAllScans = async () => {
     }
     console.log('gauge "Trivy image vulnerabilities" ok')
 
-    if (scanTarget.type === 'image') {
-      const imageRef = parseQualifiedName(scanTarget.name)
-      const results = report.Results || []
-      for (const result of results) {
-        const vulnerabilities = result.Vulnerabilities || []
-        for (const vulnerability of vulnerabilities) {
-          for (const container of containers.filter(container => container.image === scanTarget.name)) {
-            const v2Scores = Object.values(vulnerability.CVSS || {}).map((item: any) => item.V2Score).filter(score => score !== undefined)
-            const v3Scores = Object.values(vulnerability.CVSS || {}).map((item: any) => item.V3Score).filter(score => score !== undefined)
-            const allScores = v2Scores.concat(v3Scores)
-            const maxScore = Math.max(...allScores)
-            const labels: Record<string, string | number | undefined> = {
-              container_name: container.name,
+    if (enableVulnId) {
+      if (scanTarget.type === 'image') {
+        const imageRef = parseQualifiedName(scanTarget.name)
+        const results = report.Results || []
+        for (const result of results) {
+          const vulnerabilities = result.Vulnerabilities || []
+          for (const vulnerability of vulnerabilities) {
+            for (const container of containers.filter(container => container.image === scanTarget.name)) {
+              const v2Scores = Object.values(vulnerability.CVSS || {}).map((item: any) => item.V2Score).filter(score => score !== undefined)
+              const v3Scores = Object.values(vulnerability.CVSS || {}).map((item: any) => item.V3Score).filter(score => score !== undefined)
+              const allScores = v2Scores.concat(v3Scores)
+              const maxScore = Math.max(...allScores)
+              const labels: Record<string, string | number | undefined> = {
+                container_name: container.name,
+                severity: vulnerability.Severity,
+                image_registry: imageRef.domain || 'index.docker.io',
+                image_repository: imageRef.repository,
+                image_tag: imageRef.tag,
+                namespace: process.env.NAMESPACE || 'default',
+                vuln_id: vulnerability.VulnerabilityID,
+                vuln_title: vulnerability.Title
+              }
+              if (maxScore > 0) labels.vuln_score = maxScore
+              prometheus.vulnerabilitiesIDGauge.set(labels, 0)
+            }
+          }
+        }
+      } else {
+        const results = report.Results || []
+        for (const result of results) {
+          const vulnerabilities = result.Vulnerabilities || []
+          for (const vulnerability of vulnerabilities) {
+            let maxScore
+            if (vulnerability.CVSS) {
+              const v2Scores = Object.values(vulnerability.CVSS).map((item: any) => item.V2Score).filter(score => score !== undefined)
+              const v3Scores = Object.values(vulnerability.CVSS).map((item: any) => item.V3Score).filter(score => score !== undefined)
+              const allScores = v2Scores.concat(v3Scores)
+              maxScore = Math.max(...allScores)
+            }
+            prometheus.vulnerabilitiesIDGauge.set({
+              container_name: `${process.env.VM_NAME || 'vm'}/${scanTarget.name}`,
               severity: vulnerability.Severity,
-              image_registry: imageRef.domain || 'index.docker.io',
-              image_repository: imageRef.repository,
-              image_tag: imageRef.tag,
               namespace: process.env.NAMESPACE || 'default',
               vuln_id: vulnerability.VulnerabilityID,
+              vuln_score: maxScore,
               vuln_title: vulnerability.Title
-            }
-            if (maxScore > 0) labels.vuln_score = maxScore
-            prometheus.vulnerabilitiesIDGauge.set(labels, 0)
+            }, 0)
           }
         }
       }
-    } else {
-      const results = report.Results || []
-      for (const result of results) {
-        const vulnerabilities = result.Vulnerabilities || []
-        for (const vulnerability of vulnerabilities) {
-          let maxScore
-          if (vulnerability.CVSS) {
-            const v2Scores = Object.values(vulnerability.CVSS).map((item: any) => item.V2Score).filter(score => score !== undefined)
-            const v3Scores = Object.values(vulnerability.CVSS).map((item: any) => item.V3Score).filter(score => score !== undefined)
-            const allScores = v2Scores.concat(v3Scores)
-            maxScore = Math.max(...allScores)
-          }
-          prometheus.vulnerabilitiesIDGauge.set({
-            container_name: `${process.env.VM_NAME || 'vm'}/${scanTarget.name}`,
-            severity: vulnerability.Severity,
-            namespace: process.env.NAMESPACE || 'default',
-            vuln_id: vulnerability.VulnerabilityID,
-            vuln_score: maxScore,
-            vuln_title: vulnerability.Title
-          }, 0)
-        }
-      }
+      console.log('gauge "Trivy vulnerability ID" ok')
     }
-    console.log('gauge "Trivy vulnerability ID" ok')
   }
 
   await prometheus.store()

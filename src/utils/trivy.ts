@@ -11,11 +11,11 @@ const severityFilter = process.env.SEVERITY
 
 export type Severity = 'Critical' | 'High' | 'Medium' | 'Low' | 'Unknown'
 
-export type SeverityCounts = Partial<Record<Severity, number>>
+export type SeverityCounts = Record<Severity, number>
 
 export async function parseSeverityCounts (report: any): Promise<SeverityCounts> {
   const results = report.Results || []
-  const severityCounts: SeverityCounts = {}
+  const severityCounts: SeverityCounts = { Critical: 0, High: 0, Medium: 0, Low: 0, Unknown: 0 }
   for (const result of results) {
     const vulnerabilities = result.Vulnerabilities || []
     for (const vulnerability of vulnerabilities) {
