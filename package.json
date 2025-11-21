@@ -1,6 +1,6 @@
 {
   "name": "trivy-exporter",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "type": "module",
   "scripts": {
     "dev": "CRON_RULE=\"0 * * * * *\" node --watch index.ts",
