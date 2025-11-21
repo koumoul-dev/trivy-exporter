@@ -5,5 +5,5 @@ Run scanners on local FS and all docker containers running on a machine then pro
 
 ```
 docker build -t trivy-exporter-dev .
-docker run -it --rm -v /var/run/docker.sock:/var/run/docker.sock:ro -v ./:/webapp/rootfs:ro -v ./data:/webapp/data -p 9000:9000 trivy-exporter-dev
+docker run -it --rm --name trivy-dev -v /var/run/docker.sock:/var/run/docker.sock:ro -v ./rootfs:/webapp/rootfs:ro -v ./data:/webapp/data -p 9000:9000 trivy-exporter-dev
 ```

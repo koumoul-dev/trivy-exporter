@@ -27,8 +27,8 @@ describe('Trivy exporter', () => {
     it('should get metrics from Trivy scan', async () => {
       const imageName = 'alpine:3.17.0'
       const report = await runScan('image', imageName)
-      const counter = await parseSeverityCounts(report)
-      console.log(counter)
+      const severityCounts = await parseSeverityCounts(report)
+      assert.ok(severityCounts!.High! > 10)
     })
 
     it('should run all scans', async () => {
@@ -37,7 +37,9 @@ describe('Trivy exporter', () => {
 
     it('should run Trivy scan root', async () => {
       const result = await runScan('fs', 'rootfs')
-      console.log(result)
+      assert.equal(result.ArtifactType, 'filesystem')
+      assert.ok(result.Results.length >= 1)
+      assert.ok(result.Results.find((r: any) => r.Target === 'package-lock.json'))
     })
   })
 })
