@@ -1,5 +1,9 @@
 import fs from 'node:fs/promises'
+import path from 'node:path'
 import { spawn } from 'node:child_process'
+
+const skipDirs = process.env.SKIP_DIRS ? process.env.SKIP_DIRS.split(',') : []
+skipDirs.push('/var/lib/docker')
 
 export type Severity = 'Critical' | 'High' | 'Medium' | 'Low' | 'Unknown'
 
@@ -22,7 +26,15 @@ export async function parseSeverityCounts (report: any): Promise<SeverityCounts>
 function execScan (type: 'fs' | 'image', name: string): Promise<string> {
   return new Promise((resolve, reject) => {
     const fileName = `./data/reports/${name.replace(/\//g, '_')}-scan-report.json`
-    const process = spawn('trivy', [type, '--scanners', 'vuln', '--cache-dir', 'data/cache', '--format', 'json', '-o', fileName, name], { stdio: 'inherit' })
+    const args = [type, '--scanners', 'vuln', '--cache-dir', 'data/cache', '--format', 'json', '-o', fileName]
+    args.push(name)
+    if (type === 'fs' && name === 'rootfs') {
+      for (const skipDir of skipDirs) {
+        args.push('--skip-dirs')
+        args.push(path.join('/webapp/rootfs', skipDir))
+      }
+    }
+    const process = spawn('trivy', args, { stdio: 'inherit' })
     process.on('close', (code) => {
       if (code !== 0) return reject(new Error(`Trivy scan failed with code ${code}`))
       resolve(fileName)
