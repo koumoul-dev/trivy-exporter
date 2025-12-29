@@ -44,8 +44,8 @@ function execScan (type: 'fs' | 'image', name: string): Promise<string> {
       }
     }
     const process = spawn('trivy', args, { stdio: 'inherit' })
-    process.on('close', (code) => {
-      if (code !== 0) return reject(new Error(`Trivy scan failed with code ${code}`))
+    process.on('close', (code, signal) => {
+      if (code !== 0) return reject(new Error(`Trivy scan failed with code=${code}, signal=${signal}`))
       resolve(fileName)
     })
   })
