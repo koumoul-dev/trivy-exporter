@@ -1,5 +1,5 @@
 ##########################
-FROM node:24.11.1-alpine3.22 AS base
+FROM node:24.13.0-alpine3.23 AS base
 
 WORKDIR /webapp
 ENV NODE_ENV=production
@@ -7,7 +7,7 @@ ENV NODE_ENV=production
 ##########################
 FROM base AS trivy-installer
 
-ARG TRIVY_VERSION=0.67.2
+ARG TRIVY_VERSION=0.68.2
 
 RUN apk update && apk add --no-cache ca-certificates git rpm && update-ca-certificates
 

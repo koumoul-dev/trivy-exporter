@@ -1,6 +1,6 @@
 import fs from 'node:fs/promises'
 import path from 'node:path'
-import { spawn } from 'node:child_process'
+import { spawn, execSync } from 'node:child_process'
 
 const skipDirs = process.env.SKIP_DIRS ? process.env.SKIP_DIRS.split(',') : []
 skipDirs.push('/var/lib/docker')
@@ -8,6 +8,13 @@ skipDirs.push('/var/lib/docker')
 const ignoreUnfixed = process.env.IGNORE_UNFIXED === '1' || process.env.IGNORE_UNFIXED?.toLowerCase() === 'true'
 
 const severityFilter = process.env.SEVERITY
+
+// a somewhat hackish way to filter out vulnerabilities linked to old kernels
+// waiting for trivy to implement it correctly
+// https://github.com/aquasecurity/trivy/issues/3764#issuecomment-1457869338
+const kernelVersion = execSync("uname -r | cut -d'-' -f1,2").toString().trim()
+console.log('detected kernel version', kernelVersion)
+await fs.writeFile('/tmp/kernel_info.json', JSON.stringify({}))
 
 export type Severity = 'Critical' | 'High' | 'Medium' | 'Low' | 'Unknown'
 
@@ -30,7 +37,19 @@ export async function parseSeverityCounts (report: any): Promise<SeverityCounts>
 function execScan (type: 'fs' | 'image', name: string): Promise<string> {
   return new Promise((resolve, reject) => {
     const fileName = `./data/reports/${name.replace(/\//g, '_')}-scan-report.json`
-    const args = [type, '--scanners', 'vuln', '--cache-dir', 'data/cache', '--format', 'json', '-o', fileName]
+    const args = [
+      type,
+      '--scanners', 'vuln',
+      '--cache-dir', 'data/cache',
+      '--format', 'json',
+      '-o', fileName
+    ]
+    if (type === 'fs') {
+      args.push(
+        '--ignore-policy', import.meta.dirname + '/ignore_old_kernels.rego',
+        '--data', '/tmp/kernel_info.json'
+      )
+    }
     if (ignoreUnfixed) args.push('--ignore-unfixed')
     if (severityFilter) {
       args.push('--severity')
