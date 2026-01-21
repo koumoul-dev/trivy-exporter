@@ -62,7 +62,7 @@ export const start = async (port: number) => {
           res.end()
         })
         .catch(err => {
-          console.error('failed to server prometheus /metrics', err)
+          console.error('failed to serve prometheus /metrics', err)
           res.writeHead(500)
           res.end()
         })

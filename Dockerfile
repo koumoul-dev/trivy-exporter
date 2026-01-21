@@ -31,7 +31,7 @@ RUN jq '.version="build"' package-lock.json | sponge package-lock.json
 FROM base AS installer
 
 RUN apk add --no-cache python3 make g++ git jq moreutils
-RUN npm i -g clean-modules@3.0.4
+RUN npm i -g clean-modules@3.1.1
 COPY --from=package-strip /webapp/package.json package.json
 COPY --from=package-strip /webapp/package-lock.json package-lock.json
 RUN npm ci --omit=dev --omit=optional --no-audit --no-fund && npx clean-modules --yes
@@ -48,6 +48,6 @@ ADD package.json README.md LICENSE BUILD.json* ./
 VOLUME /var/run/docker.sock
 VOLUME /webapp/data
 VOLUME /webapp/rootfs
-EXPOSE 9090
+EXPOSE 9000
 
 CMD ["node", "index.ts"]
