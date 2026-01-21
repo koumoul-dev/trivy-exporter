@@ -12,9 +12,9 @@ const severityFilter = process.env.SEVERITY
 // a somewhat hackish way to filter out vulnerabilities linked to old kernels
 // waiting for trivy to implement it correctly
 // https://github.com/aquasecurity/trivy/issues/3764#issuecomment-1457869338
-const kernelVersion = execSync("uname -r | cut -d'-' -f1,2").toString().trim()
-console.log('detected kernel version', kernelVersion)
-await fs.writeFile('/tmp/kernel_info.json', JSON.stringify({}))
+const current_kernel = execSync("uname -r | cut -d'-' -f1,2").toString().trim()
+console.log('detected kernel version', current_kernel)
+await fs.writeFile('/tmp/kernel_info.json', JSON.stringify({current_kernel}))
 
 export type Severity = 'Critical' | 'High' | 'Medium' | 'Low' | 'Unknown'
 
@@ -62,6 +62,7 @@ function execScan (type: 'fs' | 'image', name: string): Promise<string> {
         args.push(path.join('/webapp/rootfs', skipDir))
       }
     }
+    console.log(`spawn: trivy ${args.join(' ')}`)
     const process = spawn('trivy', args, { stdio: 'inherit' })
     process.on('close', (code, signal) => {
       if (code !== 0) return reject(new Error(`Trivy scan failed with code=${code}, signal=${signal}`))
