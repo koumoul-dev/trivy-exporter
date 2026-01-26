@@ -12,9 +12,9 @@ const severityFilter = process.env.SEVERITY
 // a somewhat hackish way to filter out vulnerabilities linked to old kernels
 // waiting for trivy to implement it correctly
 // https://github.com/aquasecurity/trivy/issues/3764#issuecomment-1457869338
-const current_kernel = execSync("uname -r | cut -d'-' -f1,2").toString().trim()
-console.log('detected kernel version', current_kernel)
-await fs.writeFile('/tmp/kernel_info.json', JSON.stringify({current_kernel}))
+const currentKernel = execSync("uname -r | cut -d'-' -f1,2").toString().trim()
+console.log('detected kernel version', currentKernel)
+await fs.writeFile('/tmp/ignore_old_kernels.rego', (await fs.readFile(import.meta.dirname + '/ignore_old_kernels.rego', 'utf-8')).replace('{{current_kernel}}', currentKernel))
 
 export type Severity = 'Critical' | 'High' | 'Medium' | 'Low' | 'Unknown'
 
@@ -45,10 +45,7 @@ function execScan (type: 'fs' | 'image', name: string): Promise<string> {
       '-o', fileName
     ]
     if (type === 'fs') {
-      args.push(
-        '--ignore-policy', import.meta.dirname + '/ignore_old_kernels.rego',
-        '--data', '/tmp/kernel_info.json'
-      )
+      args.push('--ignore-policy', '/tmp/ignore_old_kernels.rego')
     }
     if (ignoreUnfixed) args.push('--ignore-unfixed')
     if (severityFilter) {
